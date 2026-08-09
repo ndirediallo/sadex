@@ -1,0 +1,892 @@
+/* ==========================================================================
+   SADEX — Espace Admin
+   Interface de connexion, formulaires, et modèles de documents imprimables
+   ========================================================================== */
+
+body {
+  background: var(--bg-alt);
+}
+
+/* ---------- Écran de connexion ---------- */
+.login-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, var(--navy-light) 100%);
+}
+
+.login-gate[hidden],
+.admin-app[hidden],
+.admin-panel[hidden],
+.preview-overlay[hidden] {
+  display: none !important;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 44px 36px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.login-card h1 {
+  font-size: 1.4rem;
+  margin-bottom: 0.3em;
+}
+
+.login-card p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.login-card input[type="password"] {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 0.98rem;
+  margin-bottom: 14px;
+  background: var(--bg-alt);
+}
+
+.login-card input[type="password"]:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: #fff;
+}
+
+.login-error {
+  color: #c0392b;
+  font-size: 0.86rem;
+  margin: 12px 0 0;
+}
+
+/* ---------- Structure admin ---------- */
+.admin-app {
+  min-height: 100vh;
+}
+
+.admin-header {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-badge {
+  background: var(--navy-soft);
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 18px 24px 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-tab {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-bottom: none;
+  padding: 12px 20px;
+  border-radius: 10px 10px 0 0;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.admin-tab.active {
+  color: var(--navy);
+  background: var(--bg-alt);
+  border-color: var(--border);
+}
+
+.admin-main {
+  padding: 0 24px 64px;
+}
+
+.admin-panel {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-form-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 0 var(--radius) var(--radius) var(--radius);
+  padding: 32px;
+}
+
+.admin-form-card h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.2em;
+}
+
+.admin-form-hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.admin-form-section {
+  font-size: 1rem;
+  color: var(--navy);
+  margin: 28px 0 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.admin-form-card .field input,
+.admin-form-card .field textarea,
+.admin-form-card .field select {
+  background: #fff;
+}
+
+.admin-form-card textarea {
+  min-height: 90px;
+}
+
+/* ---------- Lignes répétables (formation / expérience CV) ---------- */
+.repeatable-row {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 20px 44px 4px 20px;
+  margin-bottom: 14px;
+}
+
+.repeatable-remove {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-alt);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.repeatable-remove:hover {
+  background: #fdeaea;
+  color: #c0392b;
+}
+
+/* ---------- Aperçu / impression ---------- */
+.preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: #d9dde4;
+  z-index: 500;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.preview-toolbar {
+  max-width: 900px;
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.document-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 40px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  padding: 18mm;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  color: var(--text);
+}
+
+.document-page.doc-landscape {
+  width: 297mm;
+  min-height: 210mm;
+  padding: 0;
+}
+
+/* ================= MODÈLE : ATTESTATION (paysage) ================= */
+.cert {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 210mm;
+  overflow: hidden;
+  background: #fdfdfb;
+}
+
+.cert-pinstripes {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(22, 48, 92, 0.035) 0px,
+    rgba(22, 48, 92, 0.035) 2px,
+    transparent 2px,
+    transparent 15px
+  );
+  pointer-events: none;
+}
+
+.cert-frame-outer {
+  position: absolute;
+  inset: 7mm;
+  border: 1.2px solid rgba(228, 167, 46, 0.55);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cert-frame-inner {
+  position: absolute;
+  inset: 11mm;
+  border: 2.5px solid var(--gold);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cert-corner {
+  position: absolute;
+  width: 130mm;
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.95;
+}
+
+.cert-corner-tl {
+  top: 0;
+  left: 0;
+}
+
+.cert-corner-br {
+  bottom: 0;
+  right: 0;
+  transform: rotate(180deg);
+}
+
+.cert-badge {
+  position: absolute;
+  top: 13mm;
+  right: 22mm;
+  z-index: 3;
+  text-align: center;
+}
+
+.cert-badge-circle {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  background: var(--navy-dark);
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 1.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  box-shadow: 0 0 0 3px rgba(228, 167, 46, 0.22);
+}
+
+.cert-badge-ribbons {
+  width: 0;
+  height: 0;
+  margin: -1px auto 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 16px solid var(--gold-dark);
+}
+
+.cert-badge-sub {
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  color: var(--navy);
+  font-weight: 800;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.cert-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  min-height: 210mm;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 19mm 30mm 46mm;
+}
+
+.cert-kicker {
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold-dark);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.cert-title-serif {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.5rem;
+  letter-spacing: 0.1em;
+  color: var(--navy-dark);
+  margin: 0;
+  line-height: 1;
+}
+
+.cert-subtitle-serif {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  letter-spacing: 0.5em;
+  color: var(--gold-dark);
+  margin: 8px 0 24px;
+  padding-left: 0.5em;
+}
+
+.cert-ribbon-banner {
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 9px 36px;
+  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+  margin-bottom: 24px;
+}
+
+.cert-name-script {
+  font-family: "Segoe Script", "Brush Script MT", cursive;
+  font-size: 2.5rem;
+  color: var(--navy-dark);
+  margin-bottom: 8px;
+}
+
+.cert-name-underline {
+  width: 260px;
+  height: 1.5px;
+  background: var(--gold);
+  margin-bottom: 22px;
+}
+
+.cert-body-text {
+  max-width: 610px;
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.cert-body-text p {
+  margin: 0 0 10px;
+}
+
+.cert-body-text p:last-child {
+  margin-bottom: 0;
+}
+
+.cert-body-text strong {
+  color: var(--navy-dark);
+}
+
+.cert-formation-line {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--gold-dark);
+  margin: 2px 0 12px !important;
+}
+
+.cert-description {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.cert-signatures {
+  position: absolute;
+  left: 30mm;
+  right: 30mm;
+  bottom: 20mm;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: 90px;
+}
+
+.cert-sign-block {
+  width: 190px;
+  text-align: center;
+}
+
+.cert-sign-line {
+  border-top: 1.3px solid var(--text);
+  margin-bottom: 8px;
+}
+
+.cert-sign-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.cert-number {
+  position: absolute;
+  bottom: 9mm;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 3px 12px;
+  border-radius: 999px;
+}
+
+/* ================= MODÈLE : CV ================= */
+.cv-doc {
+  display: flex;
+  min-height: calc(297mm - 36mm);
+  margin: -18mm;
+  width: calc(100% + 36mm);
+}
+
+.cv-sidebar {
+  width: 34%;
+  background: var(--navy-dark);
+  color: #fff;
+  padding: 30mm 14mm 14mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--gold);
+  margin: 0 auto 18px;
+  display: block;
+}
+
+.cv-photo-fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--gold);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.cv-name {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.cv-title {
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--gold-light);
+  margin-bottom: 26px;
+  font-weight: 600;
+}
+
+.cv-side-section {
+  margin-bottom: 24px;
+}
+
+.cv-side-heading {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+.cv-side-item {
+  font-size: 0.82rem;
+  color: #d7e0f0;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.cv-skill-pill {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.76rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin: 0 5px 6px 0;
+}
+
+.cv-main {
+  width: 66%;
+  padding: 30mm 16mm 14mm 16mm;
+}
+
+.cv-main-section {
+  margin-bottom: 26px;
+}
+
+.cv-main-heading {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--gold);
+  display: inline-block;
+}
+
+.cv-profil-text {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.cv-entry {
+  margin-bottom: 16px;
+}
+
+.cv-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cv-entry-title {
+  font-weight: 700;
+  color: var(--navy-dark);
+  font-size: 0.96rem;
+}
+
+.cv-entry-period {
+  font-size: 0.78rem;
+  color: var(--gold-dark);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cv-entry-sub {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.cv-entry-desc {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.cv-footer-note {
+  position: absolute;
+  bottom: 8px;
+  left: 34%;
+  right: 0;
+  text-align: center;
+  font-size: 0.62rem;
+  color: var(--border);
+  letter-spacing: 0.05em;
+}
+
+/* ================= MODÈLE : FACTURE / REÇU ================= */
+.inv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  border-bottom: 3px solid var(--gold);
+  padding-bottom: 16px;
+  margin-bottom: 26px;
+}
+
+.inv-header-company {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+.inv-header-title {
+  text-align: right;
+  flex: none;
+}
+
+.inv-header-title h1 {
+  font-size: 1.5rem;
+  color: var(--navy-dark);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.inv-header-meta {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.inv-header-meta strong {
+  color: var(--navy);
+}
+
+.inv-client {
+  background: var(--bg-alt);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 26px;
+}
+
+.inv-client-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-dark);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.inv-client-name {
+  font-weight: 700;
+  color: var(--navy-dark);
+  font-size: 1.02rem;
+}
+
+.inv-client-detail {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.inv-table thead th {
+  background: var(--navy-dark);
+  color: #fff;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.inv-table thead th.inv-num {
+  text-align: right;
+}
+
+.inv-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.86rem;
+}
+
+.inv-table td.inv-num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.inv-table tbody tr:nth-child(even) {
+  background: var(--bg-alt);
+}
+
+.inv-totals {
+  margin-left: auto;
+  width: 290px;
+  margin-top: 12px;
+  margin-bottom: 22px;
+}
+
+.inv-totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.inv-totals-row.inv-total-main {
+  border-top: 2px solid var(--navy);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+}
+
+.inv-totals-row.inv-solde {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+.inv-lettres {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  padding: 10px 14px;
+  border-left: 3px solid var(--gold);
+  background: var(--bg-alt);
+}
+
+.inv-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-bottom: 24px;
+  font-size: 0.85rem;
+}
+
+.inv-meta-item strong {
+  display: block;
+  color: var(--navy-dark);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 3px;
+}
+
+.inv-note {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+}
+
+.inv-signatures {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  margin-top: 36px;
+}
+
+.inv-sign-block {
+  flex: 1;
+  text-align: center;
+}
+
+.inv-sign-line {
+  border-top: 1.3px solid var(--text);
+  margin-top: 50px;
+  margin-bottom: 8px;
+}
+
+.inv-sign-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.inv-footer-note {
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--border);
+  margin-top: 34px;
+}
+
+/* ================= IMPRESSION ================= */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  html, body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  .preview-overlay {
+    position: static;
+    background: #fff;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .document-page {
+    box-shadow: none;
+    margin: 0;
+    width: auto;
+    min-height: 0;
+  }
+
+  /* L'orientation (portrait/paysage) est injectée dynamiquement par admin.js
+     via #printOrientationStyle, selon le document généré. */
+}
+
+/* ---------- Responsive admin ---------- */
+@media (max-width: 720px) {
+  .admin-header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+  .admin-tabs { padding: 14px 16px 0; flex-wrap: wrap; }
+  .admin-tab { padding: 10px 14px; font-size: 0.84rem; }
+  .admin-main { padding: 0 16px 48px; }
+  .admin-form-card { padding: 22px 18px; }
+  .form-row { grid-template-columns: 1fr; }
+  .document-page { width: 100%; padding: 8mm; }
+  .cv-doc { flex-direction: column; margin: -8mm; width: calc(100% + 16mm); }
+  .cv-sidebar, .cv-main { width: 100%; padding: 20px; }
+  .preview-toolbar { flex-direction: column; }
+  .inv-header { flex-direction: column; }
+  .inv-header-title { text-align: left; }
+  .inv-totals { width: 100%; }
+  .inv-signatures { flex-direction: column; gap: 24px; }
+}

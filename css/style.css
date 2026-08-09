@@ -675,7 +675,8 @@ p {
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   padding: 12px 14px;
   border: 1.5px solid var(--border);
@@ -688,7 +689,8 @@ p {
 }
 
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field select:focus {
   outline: none;
   border-color: var(--gold);
   background: #fff;

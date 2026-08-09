@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Espace Admin — Sadex</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- ===================== ÉCRAN DE CONNEXION ===================== -->
+<div id="loginGate" class="login-gate">
+  <div class="login-card">
+    <svg class="logo-wordmark" style="height:38px; margin:0 auto 18px; display:block;" viewBox="0 0 132 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sadex">
+      <defs>
+        <linearGradient id="sSplitLogin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="50%" stop-color="#16305c"/>
+          <stop offset="50%" stop-color="#e4a72e"/>
+        </linearGradient>
+      </defs>
+      <text x="3" y="36" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="35"><tspan fill="url(#sSplitLogin)">S</tspan><tspan fill="#16305c">adex</tspan></text>
+    </svg>
+    <h1>Espace Admin</h1>
+    <p>Accès réservé à l'équipe Sadex.</p>
+    <form id="loginForm">
+      <input type="password" id="passwordInput" placeholder="Mot de passe" required autocomplete="current-password">
+      <button type="submit" class="btn btn-primary" style="width:100%;">Se connecter</button>
+      <p id="loginError" class="login-error" hidden>Mot de passe incorrect.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== APPLICATION ADMIN ===================== -->
+<div id="adminApp" class="admin-app" hidden>
+
+  <header class="admin-header no-print">
+    <a href="index.html" class="logo">
+      <svg class="logo-wordmark" viewBox="0 0 132 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sadex">
+        <defs>
+          <linearGradient id="sSplitAdmin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="50%" stop-color="#16305c"/>
+            <stop offset="50%" stop-color="#e4a72e"/>
+          </linearGradient>
+        </defs>
+        <text x="3" y="36" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="35"><tspan fill="url(#sSplitAdmin)">S</tspan><tspan fill="#16305c">adex</tspan></text>
+      </svg>
+    </a>
+    <div class="admin-header-actions">
+      <span class="admin-badge">Espace Admin</span>
+      <button id="logoutBtn" class="btn btn-outline-navy btn-sm" type="button">Déconnexion</button>
+    </div>
+  </header>
+
+  <nav class="admin-tabs no-print">
+    <button class="admin-tab active" data-tab="attestation" type="button">📜 Attestation de formation</button>
+    <button class="admin-tab" data-tab="cv" type="button">🧑‍💼 CV client</button>
+    <button class="admin-tab" data-tab="facture" type="button">🧾 Facture / Reçu</button>
+  </nav>
+
+  <main class="admin-main no-print">
+
+    <!-- ===================== PANNEAU ATTESTATION ===================== -->
+    <section id="panel-attestation" class="admin-panel">
+      <div class="admin-form-card">
+        <h2>Générer une attestation de formation</h2>
+        <p class="admin-form-hint">Remplissez les informations ci-dessous, puis cliquez sur « Générer l'aperçu ».</p>
+
+        <form id="attestationForm">
+          <div class="form-row">
+            <div class="field">
+              <label for="att-civilite">Civilité *</label>
+              <select id="att-civilite">
+                <option value="M.">M.</option>
+                <option value="Mme">Mme</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="att-nom">Nom complet du stagiaire *</label>
+              <input type="text" id="att-nom" required placeholder="Ex: Mamadou Diallo">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="att-formation">Intitulé de la formation *</label>
+            <input type="text" id="att-formation" required placeholder="Ex: Formation en informatique - Bureautique">
+          </div>
+
+          <div class="field">
+            <label for="att-domaine">Domaine / spécialité</label>
+            <input type="text" id="att-domaine" placeholder="Ex: la bureautique et les outils numériques">
+          </div>
+
+          <div class="field">
+            <label for="att-description">Contenu / modules couverts (optionnel)</label>
+            <textarea id="att-description" placeholder="Ex: Word, Excel, PowerPoint, navigation Internet et messagerie électronique."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="att-debut">Date de début *</label>
+              <input type="date" id="att-debut" required>
+            </div>
+            <div class="field">
+              <label for="att-fin">Date de fin *</label>
+              <input type="date" id="att-fin" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="att-duree">Nombre d'heures</label>
+              <input type="text" id="att-duree" placeholder="Ex: 40">
+            </div>
+            <div class="field">
+              <label for="att-mention">Appréciation</label>
+              <input type="text" id="att-mention" value="avec succès">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="att-organisme">Organisme formateur</label>
+              <input type="text" id="att-organisme" value="SADEX">
+            </div>
+            <div class="field">
+              <label for="att-lieu">Ville</label>
+              <input type="text" id="att-lieu" value="Sanoyah">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="att-responsable">Nom et fonction du responsable</label>
+              <input type="text" id="att-responsable" placeholder="Ex: Mamadou Bah, Directeur de la formation">
+            </div>
+            <div class="field">
+              <label for="att-numero">N° de l'attestation</label>
+              <input type="text" id="att-numero">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="att-emission">Date d'émission</label>
+            <input type="date" id="att-emission">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Générer l'aperçu</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== PANNEAU CV ===================== -->
+    <section id="panel-cv" class="admin-panel" hidden>
+      <div class="admin-form-card">
+        <h2>Générer un CV</h2>
+        <p class="admin-form-hint">Remplissez les informations du client, puis cliquez sur « Générer l'aperçu ».</p>
+
+        <form id="cvForm">
+
+          <h3 class="admin-form-section">Informations personnelles</h3>
+
+          <div class="field">
+            <label for="cv-photo">Photo (optionnel)</label>
+            <input type="file" id="cv-photo" accept="image/*">
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cv-nom">Nom complet *</label>
+              <input type="text" id="cv-nom" required placeholder="Ex: Fatoumata Camara">
+            </div>
+            <div class="field">
+              <label for="cv-titre">Titre / Poste recherché</label>
+              <input type="text" id="cv-titre" placeholder="Ex: Assistante administrative">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cv-telephone">Téléphone</label>
+              <input type="text" id="cv-telephone" placeholder="Ex: 620 00 00 00">
+            </div>
+            <div class="field">
+              <label for="cv-email">Email</label>
+              <input type="email" id="cv-email" placeholder="Ex: nom@email.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="cv-adresse">Ville / Adresse</label>
+              <input type="text" id="cv-adresse" placeholder="Ex: Conakry, Guinée">
+            </div>
+            <div class="field">
+              <label for="cv-naissance">Date de naissance (optionnel)</label>
+              <input type="date" id="cv-naissance">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cv-profil">Profil / Résumé</label>
+            <textarea id="cv-profil" placeholder="2 à 3 phrases présentant le profil, les points forts et l'objectif professionnel."></textarea>
+          </div>
+
+          <h3 class="admin-form-section">Formation</h3>
+          <div id="cv-formations" class="repeatable-list"></div>
+          <button type="button" class="btn btn-outline-navy btn-sm" data-add="formation">+ Ajouter une formation</button>
+
+          <h3 class="admin-form-section">Expérience professionnelle</h3>
+          <div id="cv-experiences" class="repeatable-list"></div>
+          <button type="button" class="btn btn-outline-navy btn-sm" data-add="experience">+ Ajouter une expérience</button>
+
+          <h3 class="admin-form-section">Compétences &amp; langues</h3>
+
+          <div class="field">
+            <label for="cv-competences">Compétences (une par ligne)</label>
+            <textarea id="cv-competences" placeholder="Ex:&#10;Maîtrise de Word, Excel, PowerPoint&#10;Sens de l'organisation&#10;Accueil et relation client"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="cv-langues">Langues (une par ligne, ex: Français - Courant)</label>
+            <textarea id="cv-langues" placeholder="Ex:&#10;Français - Courant&#10;Anglais - Intermédiaire"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Générer l'aperçu</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===================== PANNEAU FACTURE / REÇU ===================== -->
+    <section id="panel-facture" class="admin-panel" hidden>
+      <div class="admin-form-card">
+        <h2>Générer une facture ou un reçu</h2>
+        <p class="admin-form-hint">Remplissez les informations ci-dessous, puis cliquez sur « Générer l'aperçu ».</p>
+
+        <form id="factureForm">
+
+          <div class="form-row">
+            <div class="field">
+              <label for="doc-type">Type de document *</label>
+              <select id="doc-type">
+                <option value="facture">Facture</option>
+                <option value="recu">Reçu de paiement</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="doc-motif">Motif</label>
+              <input type="text" id="doc-motif" list="doc-motif-list" placeholder="Ex: Frais de formation">
+              <datalist id="doc-motif-list">
+                <option value="Frais de formation"></option>
+                <option value="Frais d'inscription"></option>
+                <option value="Prestation de service"></option>
+                <option value="Architecture"></option>
+              </datalist>
+            </div>
+          </div>
+
+          <h3 class="admin-form-section">Client</h3>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="doc-civilite">Civilité *</label>
+              <select id="doc-civilite">
+                <option value="M.">M.</option>
+                <option value="Mme">Mme</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="doc-client">Nom du client *</label>
+              <input type="text" id="doc-client" required placeholder="Ex: Ibrahima Sory Bah">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="doc-telephone">Téléphone (optionnel)</label>
+            <input type="text" id="doc-telephone" placeholder="Ex: 620 00 00 00">
+          </div>
+
+          <h3 class="admin-form-section">Détail</h3>
+
+          <div id="doc-lignes" class="repeatable-list"></div>
+          <button type="button" class="btn btn-outline-navy btn-sm" data-add="ligne">+ Ajouter une ligne</button>
+
+          <div class="form-row" style="margin-top:20px;">
+            <div class="field">
+              <label for="doc-paiement">Mode de paiement</label>
+              <select id="doc-paiement">
+                <option>Espèces</option>
+                <option>Orange Money</option>
+                <option>Mobile Money</option>
+                <option>Virement bancaire</option>
+                <option>Chèque</option>
+                <option>Autre</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="doc-statut">Statut du paiement</label>
+              <select id="doc-statut">
+                <option>Payé intégralement</option>
+                <option>Acompte versé</option>
+                <option>En attente de paiement</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="doc-verse">Montant versé (GNF, optionnel)</label>
+            <input type="number" id="doc-verse" min="0" step="1000" placeholder="Laisser vide = montant total réglé">
+          </div>
+
+          <div class="field">
+            <label for="doc-note">Note (optionnel)</label>
+            <textarea id="doc-note" placeholder="Ex: Merci de votre confiance."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="doc-lieu">Ville</label>
+              <input type="text" id="doc-lieu" value="Sanoyah">
+            </div>
+            <div class="field">
+              <label for="doc-numero">N° du document</label>
+              <input type="text" id="doc-numero">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="doc-date">Date d'émission</label>
+              <input type="date" id="doc-date">
+            </div>
+            <div class="field">
+              <label for="doc-responsable">Nom et fonction du responsable</label>
+              <input type="text" id="doc-responsable" placeholder="Ex: Mamadou Bah, Gérant">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Générer l'aperçu</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== MODÈLES POUR LIGNES RÉPÉTABLES ===================== -->
+<template id="tpl-formation-row">
+  <div class="repeatable-row">
+    <button type="button" class="repeatable-remove" aria-label="Supprimer">✕</button>
+    <div class="form-row">
+      <div class="field">
+        <label>Diplôme / Certification</label>
+        <input type="text" class="f-diplome" placeholder="Ex: Baccalauréat série SM">
+      </div>
+      <div class="field">
+        <label>Année</label>
+        <input type="text" class="f-annee" placeholder="Ex: 2021">
+      </div>
+    </div>
+    <div class="field">
+      <label>Établissement</label>
+      <input type="text" class="f-etablissement" placeholder="Ex: Lycée de Sanoyah">
+    </div>
+  </div>
+</template>
+
+<template id="tpl-experience-row">
+  <div class="repeatable-row">
+    <button type="button" class="repeatable-remove" aria-label="Supprimer">✕</button>
+    <div class="form-row">
+      <div class="field">
+        <label>Poste</label>
+        <input type="text" class="e-poste" placeholder="Ex: Secrétaire">
+      </div>
+      <div class="field">
+        <label>Période</label>
+        <input type="text" class="e-periode" placeholder="Ex: 2022 - 2024">
+      </div>
+    </div>
+    <div class="field">
+      <label>Entreprise / Lieu</label>
+      <input type="text" class="e-entreprise" placeholder="Ex: Sadex, Fassiah">
+    </div>
+    <div class="field">
+      <label>Description (optionnel)</label>
+      <textarea class="e-description" placeholder="Ex: Accueil physique et téléphonique, gestion du courrier et des dossiers administratifs."></textarea>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-line-row">
+  <div class="repeatable-row">
+    <button type="button" class="repeatable-remove" aria-label="Supprimer">✕</button>
+    <div class="field">
+      <label>Description</label>
+      <input type="text" class="l-description" placeholder="Ex: Frais de formation en informatique">
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Quantité</label>
+        <input type="number" class="l-quantite" value="1" min="0" step="1">
+      </div>
+      <div class="field">
+        <label>Prix unitaire (GNF)</label>
+        <input type="number" class="l-prix" min="0" step="1000" placeholder="Ex: 500000">
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ===================== APERÇU / IMPRESSION ===================== -->
+<div id="previewOverlay" class="preview-overlay" hidden>
+  <div class="preview-toolbar no-print">
+    <button id="closePreview" class="btn btn-outline-navy btn-sm" type="button">← Retour au formulaire</button>
+    <button id="printBtn" class="btn btn-primary btn-sm" type="button">🖨️ Imprimer / Enregistrer en PDF</button>
+  </div>
+  <div id="documentPreview" class="document-page"></div>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
