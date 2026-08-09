@@ -148,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     attestation: document.getElementById("panel-attestation"),
     cv: document.getElementById("panel-cv"),
     facture: document.getElementById("panel-facture"),
+    photos: document.getElementById("panel-photos"),
   };
 
   tabs.forEach((tab) => {
@@ -629,6 +630,170 @@ document.addEventListener("DOMContentLoaded", function () {
       `;
 
       showPreview(html, { landscape: false });
+    });
+  }
+
+  // ---------- Photos du site (mise à jour directe via l'API GitHub) ----------
+  const GITHUB_OWNER = "ndirediallo";
+  const GITHUB_REPO = "sadex";
+  const GITHUB_BRANCH = "main";
+  const GITHUB_TOKEN_KEY = "sadexGithubToken";
+
+  const SITE_PHOTOS = [
+    { path: "assets/images/formation-informatique.jpg", label: "Formation en informatique" },
+    { path: "assets/images/architecture.jpg", label: "Architecture" },
+    { path: "assets/images/prestations-services.jpg", label: "Prestations de services" },
+    { path: "assets/images/electricite.jpg", label: "Électricité" },
+    { path: "assets/images/programmation.jpg", label: "Programmation" },
+    { path: "assets/images/videosurveillance.jpg", label: "Caméras de surveillance" },
+    { path: "assets/images/solaire.jpg", label: "Panneaux solaires" },
+  ];
+
+  const photoSlotsContainer = document.getElementById("photo-slots");
+
+  if (photoSlotsContainer) {
+    const githubConnectBox = document.getElementById("github-connect");
+    const githubConnectedBox = document.getElementById("github-connected");
+    const ghTokenInput = document.getElementById("gh-token");
+    const ghSaveBtn = document.getElementById("gh-save");
+    const ghDisconnectBtn = document.getElementById("gh-disconnect");
+
+    function getGithubToken() {
+      return localStorage.getItem(GITHUB_TOKEN_KEY) || "";
+    }
+
+    function refreshConnectionUI() {
+      var connected = !!getGithubToken();
+      githubConnectBox.hidden = connected;
+      githubConnectedBox.hidden = !connected;
+    }
+
+    ghSaveBtn.addEventListener("click", function () {
+      var token = ghTokenInput.value.trim();
+      if (!token) return;
+      localStorage.setItem(GITHUB_TOKEN_KEY, token);
+      ghTokenInput.value = "";
+      refreshConnectionUI();
+    });
+
+    ghDisconnectBtn.addEventListener("click", function () {
+      localStorage.removeItem(GITHUB_TOKEN_KEY);
+      refreshConnectionUI();
+    });
+
+    refreshConnectionUI();
+
+    // Redimensionne/compresse l'image dans le navigateur avant envoi
+    // (garde le site rapide, évite les fichiers trop lourds pour l'API GitHub).
+    function resizeImageToBase64(file, maxWidth) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function () {
+          var img = new Image();
+          img.onload = function () {
+            var scale = Math.min(1, maxWidth / img.width);
+            var canvas = document.createElement("canvas");
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            var dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            resolve(dataUrl.split(",")[1]);
+          };
+          img.onerror = function () { reject(new Error("Image illisible")); };
+          img.src = reader.result;
+        };
+        reader.onerror = function () { reject(new Error("Fichier illisible")); };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function githubRequest(path, options) {
+      var token = getGithubToken();
+      var headers = {
+        "Authorization": "token " + token,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+      };
+      return fetch(
+        "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/contents/" + path,
+        Object.assign({ headers: headers }, options)
+      );
+    }
+
+    function uploadPhoto(slot, file, statusEl, imgEl) {
+      statusEl.textContent = "Préparation de l'image...";
+
+      resizeImageToBase64(file, 1000)
+        .then(function (base64) {
+          statusEl.textContent = "Vérification du fichier existant...";
+          return githubRequest(slot.path + "?ref=" + GITHUB_BRANCH, { method: "GET" }).then(function (getRes) {
+            if (getRes.ok) {
+              return getRes.json().then(function (data) {
+                return { base64: base64, sha: data.sha };
+              });
+            }
+            if (getRes.status === 404) {
+              return { base64: base64, sha: null };
+            }
+            throw new Error("Lecture impossible (" + getRes.status + ")");
+          });
+        })
+        .then(function (result) {
+          statusEl.textContent = "Envoi en cours...";
+          var body = {
+            message: "Mise à jour de la photo : " + slot.label + " (via l'espace admin)",
+            content: result.base64,
+            branch: GITHUB_BRANCH,
+          };
+          if (result.sha) body.sha = result.sha;
+
+          return githubRequest(slot.path, { method: "PUT", body: JSON.stringify(body) }).then(function (putRes) {
+            if (!putRes.ok) {
+              return putRes.json().catch(function () { return {}; }).then(function (err) {
+                throw new Error(err.message || "Erreur " + putRes.status);
+              });
+            }
+            imgEl.src = "data:image/jpeg;base64," + result.base64;
+            statusEl.textContent = "✅ Envoyée ! Le site sera à jour dans ~1 minute.";
+          });
+        })
+        .catch(function (err) {
+          statusEl.textContent = "❌ Erreur : " + err.message;
+        });
+    }
+
+    SITE_PHOTOS.forEach(function (slot, index) {
+      var wrapper = document.createElement("div");
+      wrapper.className = "photo-slot";
+      var inputId = "photo-input-" + index;
+
+      wrapper.innerHTML =
+        '<img src="' + slot.path + '" alt="' + escapeHtml(slot.label) + '">' +
+        '<div class="photo-slot-body">' +
+          '<div class="photo-slot-label">' + escapeHtml(slot.label) + "</div>" +
+          '<label class="photo-slot-upload" for="' + inputId + '">Changer la photo</label>' +
+          '<input type="file" id="' + inputId + '" accept="image/*">' +
+          '<div class="photo-slot-status"></div>' +
+        "</div>";
+
+      var imgEl = wrapper.querySelector("img");
+      var statusEl = wrapper.querySelector(".photo-slot-status");
+      var fileInput = wrapper.querySelector("input[type=file]");
+
+      fileInput.addEventListener("change", function () {
+        if (!getGithubToken()) {
+          statusEl.textContent = "Connectez GitHub d'abord (ci-dessus).";
+          fileInput.value = "";
+          return;
+        }
+        var file = fileInput.files[0];
+        if (!file) return;
+        uploadPhoto(slot, file, statusEl, imgEl);
+        fileInput.value = "";
+      });
+
+      photoSlotsContainer.appendChild(wrapper);
     });
   }
 });

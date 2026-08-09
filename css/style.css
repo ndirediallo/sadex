@@ -392,6 +392,15 @@ p {
   box-shadow: var(--shadow);
 }
 
+.card-photo {
+  width: calc(100% + 56px);
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  margin: -32px -28px 18px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
 .card-icon {
   width: 52px;
   height: 52px;
@@ -407,6 +416,34 @@ p {
 .card-icon svg {
   width: 26px;
   height: 26px;
+}
+
+.card-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy), var(--navy-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 22px;
+  position: relative;
+  box-shadow: 0 12px 22px -10px rgba(22, 48, 92, 0.5);
+}
+
+.card-badge::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(228, 167, 46, 0.35);
+}
+
+.card-badge svg {
+  width: 28px;
+  height: 28px;
+  color: var(--gold);
+  position: relative;
 }
 
 .card h3 {
@@ -526,8 +563,10 @@ p {
   text-align: center;
 }
 
-.value-card .card-icon {
-  margin: 0 auto 18px;
+.value-card .card-icon,
+.value-card .card-badge {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ---------- Stats ---------- */
@@ -570,6 +609,7 @@ p {
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 90% 10%, rgba(228, 167, 46, 0.3), transparent 50%);
+  pointer-events: none;
 }
 
 .cta-banner h2 {
@@ -868,6 +908,37 @@ p {
 
 @media (prefers-reduced-motion: reduce) {
   .whatsapp-float .whatsapp-ping { animation: none; display: none; }
+}
+
+/* ---------- Animations au scroll ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Cascade dans les grilles de cartes */
+.grid > .reveal:nth-child(1) { transition-delay: 0s; }
+.grid > .reveal:nth-child(2) { transition-delay: 0.08s; }
+.grid > .reveal:nth-child(3) { transition-delay: 0.16s; }
+.grid > .reveal:nth-child(4) { transition-delay: 0.24s; }
+
+.contact-info-list > .reveal:nth-child(1) { transition-delay: 0s; }
+.contact-info-list > .reveal:nth-child(2) { transition-delay: 0.08s; }
+.contact-info-list > .reveal:nth-child(3) { transition-delay: 0.16s; }
+.contact-info-list > .reveal:nth-child(4) { transition-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 /* ---------- Responsive ---------- */

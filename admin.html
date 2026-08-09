@@ -58,6 +58,7 @@
     <button class="admin-tab active" data-tab="attestation" type="button">📜 Attestation de formation</button>
     <button class="admin-tab" data-tab="cv" type="button">🧑‍💼 CV client</button>
     <button class="admin-tab" data-tab="facture" type="button">🧾 Facture / Reçu</button>
+    <button class="admin-tab" data-tab="photos" type="button">🖼️ Photos du site</button>
   </nav>
 
   <main class="admin-main no-print">
@@ -340,6 +341,36 @@
 
           <button type="submit" class="btn btn-primary">Générer l'aperçu</button>
         </form>
+      </div>
+    </section>
+
+    <!-- ===================== PANNEAU PHOTOS DU SITE ===================== -->
+    <section id="panel-photos" class="admin-panel" hidden>
+      <div class="admin-form-card">
+        <h2>Photos du site</h2>
+        <p class="admin-form-hint">Remplacez les photos affichées sur l'Accueil et la page Services, directement depuis ici.</p>
+
+        <div id="github-connect" class="github-connect-box">
+          <p><strong>Connexion GitHub requise</strong> (une seule fois) pour pouvoir enregistrer les nouvelles photos directement sur le site.</p>
+          <ol class="github-connect-steps">
+            <li>Allez sur <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a></li>
+            <li><strong>Generate new token (classic)</strong>, cochez uniquement la case <strong>repo</strong></li>
+            <li>Copiez le token généré et collez-le ci-dessous</li>
+          </ol>
+          <div class="field">
+            <label for="gh-token">Token GitHub</label>
+            <input type="password" id="gh-token" placeholder="ghp_...">
+          </div>
+          <button type="button" id="gh-save" class="btn btn-primary btn-sm">Enregistrer et connecter</button>
+          <p class="form-note">Le token reste uniquement dans ce navigateur (jamais envoyé ailleurs qu'à GitHub) et sert uniquement à mettre à jour les photos du site.</p>
+        </div>
+
+        <div id="github-connected" class="github-connected-box" hidden>
+          <span>✅ GitHub connecté</span>
+          <button type="button" id="gh-disconnect" class="btn btn-outline-navy btn-sm">Déconnecter</button>
+        </div>
+
+        <div id="photo-slots" class="photo-slots"></div>
       </div>
     </section>
 
