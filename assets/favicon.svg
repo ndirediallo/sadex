@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <defs>
+    <clipPath id="favTop"><rect x="0" y="0" width="60" height="30"/></clipPath>
+    <clipPath id="favBottom"><rect x="0" y="30" width="60" height="30"/></clipPath>
+  </defs>
+  <rect width="60" height="60" rx="12" fill="#0E1F3D"/>
+  <text x="9" y="45" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="46" clip-path="url(#favTop)" fill="#3E6BB0">S</text>
+  <text x="9" y="45" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="46" clip-path="url(#favBottom)" fill="#E4A72E">S</text>
+</svg>
