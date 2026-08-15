@@ -169,6 +169,46 @@ body {
   min-height: 90px;
 }
 
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.radio-group input[type="radio"] {
+  width: auto;
+  accent-color: var(--navy);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  accent-color: var(--navy);
+}
+
 /* ---------- Lignes répétables (formation / expérience CV) ---------- */
 .repeatable-row {
   position: relative;
@@ -197,6 +237,166 @@ body {
 .repeatable-remove:hover {
   background: #fdeaea;
   color: #c0392b;
+}
+
+/* ---------- Total en direct (facture/reçu) ---------- */
+.inv-live-summary {
+  background: var(--navy-soft);
+  border: 1px solid rgba(22, 48, 92, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin: 6px 0 24px;
+}
+
+.inv-live-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--navy-dark);
+}
+
+.inv-live-row + .inv-live-row {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(22, 48, 92, 0.12);
+}
+
+.inv-live-row.inv-live-solde {
+  color: #c0392b;
+  font-size: 0.92rem;
+}
+
+/* ---------- Champs Paiement (mode / statut, bien distincts) ---------- */
+.payment-field {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.payment-field label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--navy-dark);
+  margin-bottom: 4px;
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+/* ---------- Historique des factures/reçus ---------- */
+.history-box {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+  margin-bottom: 28px;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.history-header h3 {
+  font-size: 0.98rem;
+  color: var(--navy-dark);
+  margin: 0;
+}
+
+.history-status {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.history-table-wrap {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.history-table th {
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.history-table tbody tr:hover {
+  background: #fff;
+}
+
+.history-edit-btn,
+.history-delete-btn {
+  border: none;
+  background: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.history-edit-btn {
+  color: var(--navy);
+}
+
+.history-edit-btn:hover {
+  background: var(--navy-soft);
+}
+
+.history-delete-btn {
+  color: #c0392b;
+}
+
+.history-delete-btn:hover {
+  background: #fdeaea;
+}
+
+/* ---------- Tampon "PAYÉ" (ancré sur le bloc client, toujours vide à droite) ---------- */
+.inv-stamp {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  border: 3px solid #1e8f4e;
+  color: #1e8f4e;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 0.12em;
+  padding: 5px 14px;
+  border-radius: 8px;
+  transform: rotate(-10deg);
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 5;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
 }
 
 /* ---------- Aperçu / impression ---------- */
@@ -644,6 +844,13 @@ body {
 }
 
 /* ================= MODÈLE : FACTURE / REÇU ================= */
+.inv-doc {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(297mm - 36mm);
+}
+
 .inv-header {
   display: flex;
   justify-content: space-between;
@@ -683,6 +890,7 @@ body {
 }
 
 .inv-client {
+  position: relative;
   background: var(--bg-alt);
   border-radius: var(--radius-sm);
   padding: 14px 18px;
@@ -784,6 +992,17 @@ body {
   background: var(--bg-alt);
 }
 
+.inv-proforma-note {
+  font-size: 0.78rem;
+  color: #9a6300;
+  background: #fdf3e0;
+  border: 1px solid #f0dba8;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 .inv-meta-grid {
   display: flex;
   flex-wrap: wrap;
@@ -830,11 +1049,30 @@ body {
   color: var(--text-muted);
 }
 
+.inv-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: auto;
+  text-align: center;
+}
+
+.inv-footer-thanks {
+  font-weight: 700;
+  color: var(--navy-dark);
+  font-size: 0.92rem;
+  margin-bottom: 5px;
+}
+
+.inv-footer-contact {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 .inv-footer-note {
   text-align: center;
   font-size: 0.68rem;
   color: var(--border);
-  margin-top: 34px;
+  margin-top: 10px;
 }
 
 /* ================= PHOTOS DU SITE ================= */

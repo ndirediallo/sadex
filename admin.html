@@ -14,15 +14,7 @@
 <!-- ===================== ÉCRAN DE CONNEXION ===================== -->
 <div id="loginGate" class="login-gate">
   <div class="login-card">
-    <svg class="logo-wordmark" style="height:38px; margin:0 auto 18px; display:block;" viewBox="0 0 132 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sadex">
-      <defs>
-        <linearGradient id="sSplitLogin" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="50%" stop-color="#16305c"/>
-          <stop offset="50%" stop-color="#e4a72e"/>
-        </linearGradient>
-      </defs>
-      <text x="3" y="36" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="35"><tspan fill="url(#sSplitLogin)">S</tspan><tspan fill="#16305c">adex</tspan></text>
-    </svg>
+    <img class="logo-wordmark" style="height:38px; width:auto; margin:0 auto 18px; display:block;" src="assets/logo.png" alt="Sadex">
     <h1>Espace Admin</h1>
     <p>Accès réservé à l'équipe Sadex.</p>
     <form id="loginForm">
@@ -38,15 +30,7 @@
 
   <header class="admin-header no-print">
     <a href="index.html" class="logo">
-      <svg class="logo-wordmark" viewBox="0 0 132 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sadex">
-        <defs>
-          <linearGradient id="sSplitAdmin" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="50%" stop-color="#16305c"/>
-            <stop offset="50%" stop-color="#e4a72e"/>
-          </linearGradient>
-        </defs>
-        <text x="3" y="36" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="35"><tspan fill="url(#sSplitAdmin)">S</tspan><tspan fill="#16305c">adex</tspan></text>
-      </svg>
+      <img class="logo-wordmark" src="assets/logo.png" alt="Sadex">
     </a>
     <div class="admin-header-actions">
       <span class="admin-badge">Espace Admin</span>
@@ -235,7 +219,23 @@
     <section id="panel-facture" class="admin-panel" hidden>
       <div class="admin-form-card">
         <h2>Générer une facture ou un reçu</h2>
-        <p class="admin-form-hint">Remplissez les informations ci-dessous, puis cliquez sur « Générer l'aperçu ».</p>
+        <p class="admin-form-hint">Remplissez les informations ci-dessous, puis cliquez sur « Générer l'aperçu ». Chaque document généré est automatiquement enregistré dans l'historique ci-dessous.</p>
+
+        <div class="history-box">
+          <div class="history-header">
+            <h3>Historique des documents</h3>
+            <button type="button" id="history-refresh" class="btn btn-outline-navy btn-sm">Actualiser</button>
+          </div>
+          <p class="history-status" id="history-status">Connectez GitHub (onglet « Photos du site ») pour activer l'historique.</p>
+          <div class="history-table-wrap">
+            <table class="history-table" id="history-table" hidden>
+              <thead>
+                <tr><th>Numéro</th><th>Client</th><th>Date</th><th>Total</th><th>Statut</th><th></th></tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </div>
 
         <form id="factureForm">
 
@@ -244,6 +244,7 @@
               <label for="doc-type">Type de document *</label>
               <select id="doc-type">
                 <option value="facture">Facture</option>
+                <option value="proforma">Facture proforma</option>
                 <option value="recu">Reçu de paiement</option>
               </select>
             </div>
@@ -261,8 +262,16 @@
 
           <h3 class="admin-form-section">Client</h3>
 
+          <div class="field">
+            <label for="doc-client-type">Type de client *</label>
+            <select id="doc-client-type">
+              <option value="particulier">Particulier</option>
+              <option value="entreprise">Entreprise</option>
+            </select>
+          </div>
+
           <div class="form-row">
-            <div class="field">
+            <div class="field" id="doc-civilite-field">
               <label for="doc-civilite">Civilité *</label>
               <select id="doc-civilite">
                 <option value="M.">M.</option>
@@ -270,9 +279,14 @@
               </select>
             </div>
             <div class="field">
-              <label for="doc-client">Nom du client *</label>
+              <label for="doc-client" id="doc-client-label">Nom du client *</label>
               <input type="text" id="doc-client" required placeholder="Ex: Ibrahima Sory Bah">
             </div>
+          </div>
+
+          <div class="field">
+            <label for="doc-adresse">Adresse du client (optionnel)</label>
+            <input type="text" id="doc-adresse" placeholder="Ex: Kaloum, Conakry">
           </div>
 
           <div class="field">
@@ -285,31 +299,45 @@
           <div id="doc-lignes" class="repeatable-list"></div>
           <button type="button" class="btn btn-outline-navy btn-sm" data-add="ligne">+ Ajouter une ligne</button>
 
-          <div class="form-row" style="margin-top:20px;">
-            <div class="field">
-              <label for="doc-paiement">Mode de paiement</label>
-              <select id="doc-paiement">
-                <option>Espèces</option>
-                <option>Orange Money</option>
-                <option>Mobile Money</option>
-                <option>Virement bancaire</option>
-                <option>Chèque</option>
-                <option>Autre</option>
-              </select>
+          <div class="inv-live-summary" id="doc-live-summary">
+            <div class="inv-live-row">
+              <span>Total</span>
+              <span id="doc-live-total">0 GNF</span>
             </div>
-            <div class="field">
-              <label for="doc-statut">Statut du paiement</label>
-              <select id="doc-statut">
-                <option>Payé intégralement</option>
-                <option>Acompte versé</option>
-                <option>En attente de paiement</option>
-              </select>
+            <div class="inv-live-row inv-live-solde" id="doc-live-solde-row" hidden>
+              <span>Reste à payer</span>
+              <span id="doc-live-solde">0 GNF</span>
             </div>
           </div>
 
-          <div class="field">
-            <label for="doc-verse">Montant versé (GNF, optionnel)</label>
-            <input type="number" id="doc-verse" min="0" step="1000" placeholder="Laisser vide = montant total réglé">
+          <h3 class="admin-form-section">Paiement</h3>
+
+          <div class="payment-field">
+            <label for="doc-paiement">Mode de paiement</label>
+            <p class="field-hint">Comment le client règle (espèces, Orange Money, virement...).</p>
+            <select id="doc-paiement">
+              <option>Espèces</option>
+              <option>Orange Money</option>
+              <option>Mobile Money</option>
+              <option>Virement bancaire</option>
+              <option>Chèque</option>
+              <option>Autre</option>
+            </select>
+          </div>
+
+          <div class="payment-field" id="doc-statut-field">
+            <label for="doc-statut">Statut du paiement</label>
+            <p class="field-hint">Où en est le règlement : payé, partiel, ou pas encore reçu.</p>
+            <select id="doc-statut">
+              <option>Payé intégralement</option>
+              <option>Acompte versé</option>
+              <option>En attente de paiement</option>
+            </select>
+          </div>
+
+          <div class="field" id="doc-verse-field">
+            <label for="doc-verse">Montant versé (GNF)</label>
+            <input type="number" id="doc-verse" min="0" step="1" placeholder="Ex: 500000">
           </div>
 
           <div class="field">
@@ -328,15 +356,27 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="field">
-              <label for="doc-date">Date d'émission</label>
-              <input type="date" id="doc-date">
+          <div class="field">
+            <label for="doc-date">Date d'émission</label>
+            <input type="date" id="doc-date">
+          </div>
+
+          <h3 class="admin-form-section">Signature</h3>
+
+          <div class="field">
+            <label>Signataire (pour SADEX) *</label>
+            <div class="radio-group">
+              <label><input type="radio" name="doc-signataire" value="Le Gérant" checked> Le Gérant</label>
+              <label><input type="radio" name="doc-signataire" value="La Comptabilité"> La Comptabilité</label>
+              <label><input type="radio" name="doc-signataire" value="La Direction"> La Direction</label>
             </div>
-            <div class="field">
-              <label for="doc-responsable">Nom et fonction du responsable</label>
-              <input type="text" id="doc-responsable" placeholder="Ex: Mamadou Bah, Gérant">
-            </div>
+          </div>
+
+          <div class="field">
+            <label class="checkbox-label">
+              <input type="checkbox" id="doc-client-signature">
+              Inclure aussi une signature client (nom + ligne de signature)
+            </label>
           </div>
 
           <button type="submit" class="btn btn-primary">Générer l'aperçu</button>
@@ -436,7 +476,7 @@
       </div>
       <div class="field">
         <label>Prix unitaire (GNF)</label>
-        <input type="number" class="l-prix" min="0" step="1000" placeholder="Ex: 500000">
+        <input type="number" class="l-prix" min="0" step="1" placeholder="Ex: 1500">
       </div>
     </div>
   </div>

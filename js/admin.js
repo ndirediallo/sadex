@@ -179,16 +179,56 @@ document.addEventListener("DOMContentLoaded", function () {
   function suggestDocNumber() {
     const docNumeroInput = document.getElementById("doc-numero");
     const type = document.getElementById("doc-type").value;
-    const prefix = type === "facture" ? "SADEX-FACT" : "SADEX-REC";
+    const prefix = type === "facture" ? "SADEX-FACT" : type === "proforma" ? "SADEX-PROF" : "SADEX-REC";
     const year = new Date().getFullYear();
     const rand = Math.floor(100 + Math.random() * 900);
     docNumeroInput.value = `${prefix}-${year}-${rand}`;
   }
 
+  // Facture proforma : pas de suivi de paiement (statut / montant versé),
+  // ce document n'est qu'une estimation, pas une demande de règlement.
+  function togglePaymentSection() {
+    const type = document.getElementById("doc-type").value;
+    const isProforma = type === "proforma";
+    const statut = document.getElementById("doc-statut").value;
+    document.getElementById("doc-statut-field").hidden = isProforma;
+    // Le montant versé ne se saisit que pour un acompte : sur "Payé intégralement"
+    // il vaut le total, sur "En attente" il vaut 0, dans les deux cas pas besoin de le taper.
+    document.getElementById("doc-verse-field").hidden = isProforma || statut !== "Acompte versé";
+  }
+
+  const docStatutSelect = document.getElementById("doc-statut");
+  if (docStatutSelect) {
+    docStatutSelect.addEventListener("change", togglePaymentSection);
+  }
+
   const docTypeSelect = document.getElementById("doc-type");
   if (docTypeSelect) {
-    docTypeSelect.addEventListener("change", suggestDocNumber);
+    docTypeSelect.addEventListener("change", function () {
+      suggestDocNumber();
+      togglePaymentSection();
+    });
     suggestDocNumber();
+    togglePaymentSection();
+  }
+
+  // Client particulier (civilité M./Mme) ou entreprise (pas de civilité)
+  function toggleClientType() {
+    const clientType = document.getElementById("doc-client-type").value;
+    const isEntreprise = clientType === "entreprise";
+    document.getElementById("doc-civilite-field").hidden = isEntreprise;
+    document.getElementById("doc-client-label").textContent = isEntreprise
+      ? "Nom de l'entreprise *"
+      : "Nom du client *";
+    document.getElementById("doc-client").placeholder = isEntreprise
+      ? "Ex: Ets Bah & Frères"
+      : "Ex: Ibrahima Sory Bah";
+  }
+
+  const docClientTypeSelect = document.getElementById("doc-client-type");
+  if (docClientTypeSelect) {
+    docClientTypeSelect.addEventListener("change", toggleClientType);
+    toggleClientType();
   }
 
   // ---------- Lignes répétables (CV) ----------
@@ -216,6 +256,49 @@ document.addEventListener("DOMContentLoaded", function () {
   addRow("cv-formations", "tpl-formation-row");
   addRow("cv-experiences", "tpl-experience-row");
   if (document.getElementById("doc-lignes")) addRow("doc-lignes", "tpl-line-row");
+
+  // ---------- Total en direct (facture/reçu, avant de générer l'aperçu) ----------
+  const docLignesContainer = document.getElementById("doc-lignes");
+  if (docLignesContainer) {
+    function updateLiveTotal() {
+      const rows = document.querySelectorAll("#doc-lignes .repeatable-row");
+      let total = 0;
+      rows.forEach(function (row) {
+        const q = parseFloat(row.querySelector(".l-quantite").value) || 0;
+        const p = parseFloat(row.querySelector(".l-prix").value) || 0;
+        total += q * p;
+      });
+      document.getElementById("doc-live-total").textContent = formatGNF(total);
+
+      const type = document.getElementById("doc-type").value;
+      const statut = document.getElementById("doc-statut").value;
+      const verseInput = document.getElementById("doc-verse").value.trim();
+      let verse;
+      if (statut === "Payé intégralement") verse = total;
+      else if (statut === "Acompte versé") verse = verseInput ? parseFloat(verseInput) : 0;
+      else verse = 0;
+      const solde = total - verse;
+
+      const soldeRow = document.getElementById("doc-live-solde-row");
+      const show = type !== "proforma" && solde > 0;
+      soldeRow.hidden = !show;
+      if (show) document.getElementById("doc-live-solde").textContent = formatGNF(solde);
+    }
+
+    docLignesContainer.addEventListener("input", updateLiveTotal);
+    docLignesContainer.addEventListener("click", function () {
+      // Laisse le temps à la ligne d'être retirée du DOM avant de recalculer.
+      setTimeout(updateLiveTotal, 0);
+    });
+    document.getElementById("doc-type").addEventListener("change", updateLiveTotal);
+    document.getElementById("doc-statut").addEventListener("change", updateLiveTotal);
+    document.getElementById("doc-verse").addEventListener("input", updateLiveTotal);
+    document.querySelector('[data-add="ligne"]').addEventListener("click", function () {
+      setTimeout(updateLiveTotal, 0);
+    });
+
+    updateLiveTotal();
+  }
 
   // ---------- Aperçu / impression ----------
   const previewOverlay = document.getElementById("previewOverlay");
@@ -494,10 +577,12 @@ document.addEventListener("DOMContentLoaded", function () {
     factureForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      const type = document.getElementById("doc-type").value; // "facture" | "recu"
+      const type = document.getElementById("doc-type").value; // "facture" | "proforma" | "recu"
       const motif = document.getElementById("doc-motif").value.trim();
+      const clientType = document.getElementById("doc-client-type").value; // "particulier" | "entreprise"
       const civilite = document.getElementById("doc-civilite").value;
       const client = document.getElementById("doc-client").value.trim();
+      const adresse = document.getElementById("doc-adresse").value.trim();
       const telephone = document.getElementById("doc-telephone").value.trim();
       const paiement = document.getElementById("doc-paiement").value;
       const statut = document.getElementById("doc-statut").value;
@@ -506,7 +591,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const lieu = document.getElementById("doc-lieu").value.trim();
       const numero = document.getElementById("doc-numero").value.trim();
       const date = document.getElementById("doc-date").value;
-      const responsable = document.getElementById("doc-responsable").value.trim();
+      const signataireRadio = document.querySelector('input[name="doc-signataire"]:checked');
+      const signataire = signataireRadio ? signataireRadio.value : "La Direction";
+      const includeClientSignature = document.getElementById("doc-client-signature").checked;
+
+      const isProforma = type === "proforma";
 
       const lignes = Array.from(document.querySelectorAll("#doc-lignes .repeatable-row"))
         .map((row) => {
@@ -518,12 +607,23 @@ document.addEventListener("DOMContentLoaded", function () {
         .filter((l) => l.description);
 
       const total = lignes.reduce((sum, l) => sum + l.montant, 0);
-      const verse = verseInput ? parseFloat(verseInput) : total;
+      // Le montant versé découle du statut choisi, pas d'une simple case vide/remplie :
+      // un document "en attente de paiement" ne peut pas afficher le total comme versé.
+      let verse;
+      if (statut === "Payé intégralement") {
+        verse = total;
+      } else if (statut === "Acompte versé") {
+        verse = verseInput ? parseFloat(verseInput) : 0;
+      } else {
+        verse = 0; // En attente de paiement
+      }
       const solde = total - verse;
 
-      const nomAvecCivilite = `${civilite} ${client}`;
-      const titre = type === "facture" ? "FACTURE" : "REÇU DE PAIEMENT";
-      const introLabel = type === "facture" ? "Facturé à" : "Reçu de";
+      // Particulier : "M. Nom" / "Mme Nom" — Entreprise : juste le nom, pas de civilité.
+      const nomAvecCivilite = clientType === "entreprise" ? client : `${civilite} ${client}`;
+
+      const titre = type === "facture" ? "FACTURE" : isProforma ? "FACTURE PROFORMA" : "REÇU DE PAIEMENT";
+      const introLabel = type === "recu" ? "Reçu de" : "Facturé à";
       const montantLettres = numberToFrenchWords(total) + " francs guinéens";
 
       const lignesHtml = lignes.map((l) => `
@@ -535,35 +635,34 @@ document.addEventListener("DOMContentLoaded", function () {
         </tr>
       `).join("");
 
-      const signaturesHtml = type === "recu"
-        ? `
-          <div class="inv-signatures">
-            <div class="inv-sign-block">
-              <div class="inv-sign-line"></div>
-              <div class="inv-sign-label">Le Client<br>${escapeHtml(nomAvecCivilite)}</div>
-            </div>
-            <div class="inv-sign-block">
-              <div class="inv-sign-line"></div>
-              <div class="inv-sign-label">Pour SADEX<br>${responsable ? escapeHtml(responsable) : "Signature et cachet"}</div>
-            </div>
-          </div>`
-        : `
-          <div class="inv-signatures">
-            <div class="inv-sign-block"></div>
-            <div class="inv-sign-block">
-              <div class="inv-sign-line"></div>
-              <div class="inv-sign-label">Pour SADEX<br>${responsable ? escapeHtml(responsable) : "Signature et cachet"}</div>
-            </div>
-          </div>`;
+      const sadexSignBlock = `
+        <div class="inv-sign-block">
+          <div class="inv-sign-line"></div>
+          <div class="inv-sign-label">Pour SADEX<br>${escapeHtml(signataire)}</div>
+        </div>`;
+
+      const clientSignBlock = `
+        <div class="inv-sign-block">
+          <div class="inv-sign-line"></div>
+          <div class="inv-sign-label">Le Client<br>${escapeHtml(nomAvecCivilite)}</div>
+        </div>`;
+
+      // Le reçu inclut toujours la signature du client ; sur facture/proforma, c'est optionnel.
+      const showClientSignature = type === "recu" || includeClientSignature;
+
+      const signaturesHtml = `
+        <div class="inv-signatures">
+          ${showClientSignature ? clientSignBlock : '<div class="inv-sign-block"></div>'}
+          ${sadexSignBlock}
+        </div>`;
+
+      const isPaidInFull = !isProforma && statut === "Payé intégralement";
 
       const html = `
         <div class="inv-doc">
           <div class="inv-header">
             <div>
-              <svg class="logo-wordmark" style="height:32px;" viewBox="0 0 132 48" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sadex">
-                <defs><linearGradient id="sSplitInv" x1="0" y1="0" x2="0" y2="1"><stop offset="50%" stop-color="#16305c"/><stop offset="50%" stop-color="#e4a72e"/></linearGradient></defs>
-                <text x="3" y="36" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="35"><tspan fill="url(#sSplitInv)">S</tspan><tspan fill="#16305c">adex</tspan></text>
-              </svg>
+              <img class="logo-wordmark" style="height:32px; width:auto;" src="assets/logo.png" alt="Sadex">
               <div class="inv-header-company">
                 Fassiah Marché, Sanoyah, Guinée<br>
                 626 43 23 23 · sadexgn@gmail.com
@@ -576,9 +675,13 @@ document.addEventListener("DOMContentLoaded", function () {
             </div>
           </div>
 
+          ${isProforma ? `<div class="inv-proforma-note">Document établi à titre indicatif. Cette facture proforma ne constitue pas une facture définitive et n'est pas exigible au paiement.</div>` : ""}
+
           <div class="inv-client">
+            ${isPaidInFull ? `<div class="inv-stamp">${type === "facture" ? "Payée" : "Payé"}</div>` : ""}
             <div class="inv-client-label">${introLabel}</div>
             <div class="inv-client-name">${escapeHtml(nomAvecCivilite)}</div>
+            ${adresse ? `<div class="inv-client-detail">${escapeHtml(adresse)}</div>` : ""}
             ${telephone ? `<div class="inv-client-detail">${escapeHtml(telephone)}</div>` : ""}
             ${motif ? `<div class="inv-client-detail">Motif : ${escapeHtml(motif)}</div>` : ""}
           </div>
@@ -602,43 +705,241 @@ document.addEventListener("DOMContentLoaded", function () {
               <span>Total</span>
               <span>${formatGNF(total)}</span>
             </div>
+            ${!isProforma ? `
             <div class="inv-totals-row">
               <span>Montant versé</span>
               <span>${formatGNF(verse)}</span>
             </div>
             ${solde > 0 ? `
             <div class="inv-totals-row inv-solde">
-              <span>Solde restant dû</span>
+              <span>Reste à payer</span>
               <span>${formatGNF(solde)}</span>
-            </div>` : ""}
+            </div>` : ""}` : ""}
           </div>
 
-          <div class="inv-lettres">Arrêté le présent ${type === "facture" ? "document" : "reçu"} à la somme de : <strong>${montantLettres}</strong>.</div>
+          <div class="inv-lettres">Arrêté le présent ${isProforma ? "document" : type === "facture" ? "document" : "reçu"} à la somme de : <strong>${montantLettres}</strong>.</div>
 
           <div class="inv-meta-grid">
             <div class="inv-meta-item"><strong>Mode de paiement</strong>${escapeHtml(paiement)}</div>
-            <div class="inv-meta-item"><strong>Statut</strong>${escapeHtml(statut)}</div>
-            <div class="inv-meta-item"><strong>Lieu</strong>${escapeHtml(lieu)}</div>
+            ${!isProforma ? `<div class="inv-meta-item"><strong>Statut</strong>${escapeHtml(statut)}</div>` : ""}
           </div>
 
           ${note ? `<div class="inv-note">${escapeHtml(note)}</div>` : ""}
 
           ${signaturesHtml}
 
+          <div class="inv-footer">
+            <div class="inv-footer-thanks">Merci de votre confiance.</div>
+            <div class="inv-footer-contact">Fassiah Marché, Sanoyah, Guinée · 626 43 23 23 · sadexgn@gmail.com</div>
+          </div>
+
           <div class="inv-footer-note">Document généré par SADEX · Construire · Former · Innover</div>
         </div>
       `;
 
       showPreview(html, { landscape: false });
+
+      saveCurrentFactureToHistory({
+        numero, type, motif, clientType, civilite, client, adresse, telephone,
+        lignes, paiement, statut, verse, note, lieu, date,
+        signataire, includeClientSignature, total,
+      });
     });
   }
 
-  // ---------- Photos du site (mise à jour directe via l'API GitHub) ----------
+  // ---------- GitHub : accès partagé (Photos du site + Historique factures) ----------
   const GITHUB_OWNER = "ndirediallo";
   const GITHUB_REPO = "sadex";
   const GITHUB_BRANCH = "main";
   const GITHUB_TOKEN_KEY = "sadexGithubToken";
 
+  function getGithubToken() {
+    return localStorage.getItem(GITHUB_TOKEN_KEY) || "";
+  }
+
+  function githubRequest(path, options) {
+    var token = getGithubToken();
+    var headers = {
+      "Authorization": "token " + token,
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json",
+    };
+    return fetch(
+      "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/contents/" + path,
+      Object.assign({ headers: headers }, options)
+    );
+  }
+
+  // Encodage/décodage base64 sûr pour de l'UTF-8 (accents français inclus).
+  function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+  function base64ToUtf8(str) {
+    return decodeURIComponent(escape(atob(str.replace(/\n/g, ""))));
+  }
+
+  // ---------- Historique des factures/reçus (stocké dans le dépôt GitHub) ----------
+  const historyTable = document.getElementById("history-table");
+  const historyTbody = document.getElementById("history-tbody");
+  const historyStatus = document.getElementById("history-status");
+  const historyRefreshBtn = document.getElementById("history-refresh");
+  const HISTORY_PATH = "data/factures.json";
+
+  function loadFactureHistory() {
+    return githubRequest(HISTORY_PATH + "?ref=" + GITHUB_BRANCH, { method: "GET" }).then(function (res) {
+      if (res.status === 404) return { records: [], sha: null };
+      if (!res.ok) throw new Error("Chargement impossible (" + res.status + ")");
+      return res.json().then(function (data) {
+        var json = base64ToUtf8(data.content);
+        return { records: json ? JSON.parse(json) : [], sha: data.sha };
+      });
+    });
+  }
+
+  function saveFactureHistory(records, sha) {
+    var body = {
+      message: "Mise à jour de l'historique des factures (via l'espace admin)",
+      content: utf8ToBase64(JSON.stringify(records, null, 2)),
+      branch: GITHUB_BRANCH,
+    };
+    if (sha) body.sha = sha;
+    return githubRequest(HISTORY_PATH, { method: "PUT", body: JSON.stringify(body) });
+  }
+
+  function saveCurrentFactureToHistory(record) {
+    if (!getGithubToken() || !historyTable) return; // pas connecté : on n'enregistre pas
+    record.updatedAt = new Date().toISOString();
+
+    loadFactureHistory()
+      .then(function (result) {
+        var records = result.records;
+        var idx = records.findIndex(function (r) { return r.numero === record.numero; });
+        if (idx >= 0) records[idx] = record; else records.unshift(record);
+        return saveFactureHistory(records, result.sha).then(function (res) {
+          if (!res.ok) throw new Error("Enregistrement impossible (" + res.status + ")");
+          renderHistoryTable(records);
+        });
+      })
+      .catch(function (err) {
+        console.error("Historique :", err);
+      });
+  }
+
+  function renderHistoryTable(records) {
+    if (!historyTable) return;
+    historyTbody.innerHTML = "";
+
+    if (!records.length) {
+      historyStatus.hidden = false;
+      historyStatus.textContent = "Aucun document enregistré pour le moment.";
+      historyTable.hidden = true;
+      return;
+    }
+
+    historyStatus.hidden = true;
+    historyTable.hidden = false;
+
+    records
+      .slice()
+      .sort(function (a, b) { return (b.updatedAt || "").localeCompare(a.updatedAt || ""); })
+      .forEach(function (record) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + escapeHtml(record.numero || "") + "</td>" +
+          "<td>" + escapeHtml(record.client || "") + "</td>" +
+          "<td>" + formatDateFr(record.date) + "</td>" +
+          "<td>" + formatGNF(record.total) + "</td>" +
+          "<td>" + escapeHtml(record.type === "proforma" ? "Proforma" : record.statut || "") + "</td>" +
+          '<td><button type="button" class="history-edit-btn">Modifier</button> ' +
+          '<button type="button" class="history-delete-btn">Suppr.</button></td>';
+
+        tr.querySelector(".history-edit-btn").addEventListener("click", function () {
+          loadRecordIntoForm(record);
+        });
+        tr.querySelector(".history-delete-btn").addEventListener("click", function () {
+          if (!window.confirm("Supprimer ce document (" + record.numero + ") de l'historique ?")) return;
+          deleteHistoryRecord(record.numero);
+        });
+
+        historyTbody.appendChild(tr);
+      });
+  }
+
+  function deleteHistoryRecord(numero) {
+    loadFactureHistory().then(function (result) {
+      var records = result.records.filter(function (r) { return r.numero !== numero; });
+      return saveFactureHistory(records, result.sha).then(function (res) {
+        if (res.ok) renderHistoryTable(records);
+      });
+    });
+  }
+
+  function loadRecordIntoForm(record) {
+    document.getElementById("doc-type").value = record.type;
+    document.getElementById("doc-motif").value = record.motif || "";
+    document.getElementById("doc-client-type").value = record.clientType || "particulier";
+    toggleClientType();
+    document.getElementById("doc-civilite").value = record.civilite || "M.";
+    document.getElementById("doc-client").value = record.client || "";
+    document.getElementById("doc-adresse").value = record.adresse || "";
+    document.getElementById("doc-telephone").value = record.telephone || "";
+
+    var container = document.getElementById("doc-lignes");
+    container.innerHTML = "";
+    (record.lignes && record.lignes.length ? record.lignes : [{}]).forEach(function (l) {
+      addRow("doc-lignes", "tpl-line-row");
+      var rows = container.querySelectorAll(".repeatable-row");
+      var row = rows[rows.length - 1];
+      row.querySelector(".l-description").value = l.description || "";
+      row.querySelector(".l-quantite").value = l.quantite || 1;
+      row.querySelector(".l-prix").value = l.prix || "";
+    });
+
+    document.getElementById("doc-paiement").value = record.paiement || "Espèces";
+    document.getElementById("doc-statut").value = record.statut || "Payé intégralement";
+    document.getElementById("doc-verse").value = record.verse || "";
+    document.getElementById("doc-note").value = record.note || "";
+    document.getElementById("doc-lieu").value = record.lieu || "Sanoyah";
+    document.getElementById("doc-numero").value = record.numero || "";
+    document.getElementById("doc-date").value = record.date || "";
+
+    document.querySelectorAll('input[name="doc-signataire"]').forEach(function (r) {
+      r.checked = r.value === record.signataire;
+    });
+    document.getElementById("doc-client-signature").checked = !!record.includeClientSignature;
+
+    togglePaymentSection();
+    updateLiveTotal();
+
+    document.querySelector('.admin-tab[data-tab="facture"]').click();
+    document.getElementById("factureForm").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function refreshHistory() {
+    if (!historyTable) return;
+    if (!getGithubToken()) {
+      historyStatus.hidden = false;
+      historyStatus.textContent = "Connectez GitHub (onglet « Photos du site ») pour activer l'historique.";
+      historyTable.hidden = true;
+      return;
+    }
+    historyStatus.hidden = false;
+    historyStatus.textContent = "Chargement de l'historique...";
+    loadFactureHistory()
+      .then(function (result) {
+        renderHistoryTable(result.records);
+      })
+      .catch(function (err) {
+        historyStatus.textContent = "Erreur : " + err.message;
+      });
+  }
+
+  if (historyRefreshBtn) {
+    historyRefreshBtn.addEventListener("click", refreshHistory);
+    refreshHistory();
+  }
+
+  // ---------- Photos du site (mise à jour directe via l'API GitHub) ----------
   const SITE_PHOTOS = [
     { path: "assets/images/formation-informatique.jpg", label: "Formation en informatique" },
     { path: "assets/images/architecture.jpg", label: "Architecture" },
@@ -658,10 +959,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const ghSaveBtn = document.getElementById("gh-save");
     const ghDisconnectBtn = document.getElementById("gh-disconnect");
 
-    function getGithubToken() {
-      return localStorage.getItem(GITHUB_TOKEN_KEY) || "";
-    }
-
     function refreshConnectionUI() {
       var connected = !!getGithubToken();
       githubConnectBox.hidden = connected;
@@ -674,11 +971,13 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem(GITHUB_TOKEN_KEY, token);
       ghTokenInput.value = "";
       refreshConnectionUI();
+      refreshHistory();
     });
 
     ghDisconnectBtn.addEventListener("click", function () {
       localStorage.removeItem(GITHUB_TOKEN_KEY);
       refreshConnectionUI();
+      refreshHistory();
     });
 
     refreshConnectionUI();
@@ -706,19 +1005,6 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.onerror = function () { reject(new Error("Fichier illisible")); };
         reader.readAsDataURL(file);
       });
-    }
-
-    function githubRequest(path, options) {
-      var token = getGithubToken();
-      var headers = {
-        "Authorization": "token " + token,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json",
-      };
-      return fetch(
-        "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/contents/" + path,
-        Object.assign({ headers: headers }, options)
-      );
     }
 
     function uploadPhoto(slot, file, statusEl, imgEl) {

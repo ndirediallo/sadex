@@ -152,12 +152,16 @@ p {
   display: flex;
   align-items: center;
   font-family: var(--font);
+  flex-shrink: 0;
 }
 
 .logo-wordmark {
   height: 32px;
   width: auto;
+  max-width: none;
   display: block;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .footer-brand .logo-wordmark {
